@@ -74,10 +74,26 @@ export default function App() {
     ),
   ]);
 
-  const [table5, setTable5] = useState([
-    { label: "Special Wells 1", value: 0, checked: false },
-    { label: "Special Wells 2", value: 0, checked: false },
-    { label: "Special Wells 3", value: 0, checked: false },
+  const [table5, setTable5] = useState<Entry[]>([
+    { label: "Активный рак (химиотерапия в ближайшие 6 мес. или паллиативное лечение)", value: 3, checked: false },
+    { label: "Паралич, парез или иммобилизация нижней конечности", value: 3, checked: false },
+
+    { label: "Постельный режим более 3 дней ", value: 1, checked: false },
+    { label: "Оперативное вмешательство в анамнезе, в течение последних 4 нед.", value: 1, checked: false },
+
+    { label: "Локальная болезненность по ходу глубоких вен", value: 1, checked: false },
+
+    { label: "Увеличение объема нижней конечности", value: 1, checked: false },
+
+    {
+      label: "Односторонний увеличение голени более чем на 3 см (ниже большеберцового бугра)",
+      value: 1,
+      checked: false,
+    },
+    { label: "Односторонний отёк и изъязвление нижней конечности", value: 1, checked: false },
+
+    { label: "Коллатерали поверхностных вен", value: 1, checked: false },
+    { label: "Альтернативный диагноз столь же вероятен или более вероятен, чем ТГВ", value: -1, checked: false },
   ]);
 
   const toggleCheck = (tableIndex: number, entryIndex: number) => {
@@ -97,8 +113,7 @@ export default function App() {
     );
   };
 
-  const tableSum = (table: (typeof tables)[0]) =>
-    table.reduce((sum, entry) => (entry.checked ? sum + entry.value : sum), 0);
+  const tableSum = (table: Entry[]) => table.reduce((sum, entry) => (entry.checked ? sum + entry.value : sum), 0);
 
   const capriniSum = tables.reduce((acc, table) => acc + tableSum(table), 0);
   const wellsSum = tableSum(table5);
@@ -153,21 +168,13 @@ export default function App() {
       {/* Table 5 */}
       <div style={{ marginBottom: "20px" }}>
         <table border={1} cellPadding={5} style={{ width: "100%" }}>
-          <tbody>
-            {/* Title row */}
-            <tr>
-              <td
-                colSpan={1}
-                style={{
-                  fontWeight: "bold",
-                  backgroundColor: "#eee",
-                  padding: "8px",
-                }}>
-                Table 5 (Wells)
-              </td>
+          <thead>
+            <tr style={{ backgroundColor: "#eee", fontWeight: "bold" }}>
+              <th style={{ padding: "8px" }}>Клиническая особенность</th>
+              <th style={{ padding: "8px", width: "80px" }}>Баллы</th>
             </tr>
-
-            {/* Entries */}
+          </thead>
+          <tbody>
             {table5.map((entry, ei) => (
               <tr key={ei}>
                 <td>
@@ -181,14 +188,16 @@ export default function App() {
                     {entry.label}
                   </label>
                 </td>
+                <td style={{ textAlign: "center", fontWeight: "bold" }}>{entry.value}</td>
               </tr>
             ))}
-
-            {/* Sum row */}
-            <tr>
-              <td style={{ fontWeight: "bold", padding: "8px" }}>Sum: {wellsSum}</td>
-            </tr>
           </tbody>
+          <tfoot>
+            <tr>
+              <td style={{ fontWeight: "bold", padding: "8px" }}>Sum:</td>
+              <td style={{ fontWeight: "bold", padding: "8px", textAlign: "center" }}>{wellsSum}</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
 
