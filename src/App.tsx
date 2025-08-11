@@ -2,34 +2,106 @@ import { useState } from "react";
 
 type Entry = { label: string; value: number; checked: boolean };
 
-const makeTable = (labels: string[]) =>
+const makeTable = (labels: string[], valuePerEntry: number) =>
   labels.map((label) => ({
     label,
-    value: Math.floor(Math.random() * 20) + 1,
+    value: valuePerEntry,
     checked: false,
   }));
 
+const tableTitles = [
+  "Каждый фактор риска соответствует 1 баллу:",
+  "Каждый фактор риска соответствует 2 баллам:",
+  "Каждый фактор риска соответствует 3 баллам:",
+  "Каждый фактор риска соответствует 5 баллам:",
+];
+
 export default function App() {
   const [tables, setTables] = useState([
-    makeTable(["Item A1", "Item A2", "Item A3"]),
-    makeTable(["Item B1", "Item B2", "Item B3"]),
-    makeTable(["Item C1", "Item C2", "Item C3"]),
-    makeTable(["Item D1", "Item D2", "Item D3"]),
+    makeTable(
+      [
+        "Возраст 41-60 лет",
+        "Отек нижних конечностей",
+        "Варикозные вены",
+        "Индекс массы тела более 25кг/м2",
+        "Малое хирургическое вмешательство",
+        "Сепсис (<1 месяца)",
+        "Серьезное заболевание легких, включая пневмонию (<1 месяца)",
+        "Прием оральных контрацептивов, гормонозаместительная терапия",
+        "Острым инфаркт миокарда в анамнезе",
+        "Хроническая сердечная недостаточность (<1 месяца)",
+        "Постельным режим у нехирургического пациента",
+        "Воспалительные заболевания кишечника в анамнезе",
+        "Большое хирургическое вмешательство в анамнезе (<1 месяца)",
+        "ХОЗЛ в анамнезе",
+        "СД в анамнезе",
+        "Варикоз вен в нижних конечностей",
+      ],
+      1
+    ),
+    makeTable(
+      [
+        "Возраст 61-74 года",
+        "Злокачественное новообразование (сейчас или в анамнезе)",
+        "Лапараскопическое вмешательство (>45 мин)",
+        "Постельный режим более 72 ч",
+        "Иммобилизация конечности (<1 месяца)",
+        "Катетеризация центральных вен",
+        "Большое хирургическое вмешательство (>45 мин)",
+      ],
+      2
+    ),
+    makeTable(
+      [
+        "Возраст старше 75 лет",
+        "ТГВ/ТЭЛА в анамнезе",
+        "Мутация типа Лейден",
+        "Мутация протромбина 20210А",
+        "Гипергомоцистеинемия",
+        "Гепарин-индуцированная тромбоцитопения в анамнезе",
+        "Волчаночный антикоагулянт",
+      ],
+      3
+    ),
+    makeTable(
+      [
+        "Перелом костей бедра, таза, голени (<1 месяца)",
+        "Инсульт (давностью до 1 мес.)",
+        "Травма спинного мозга/паралич (<1 месяца)",
+        "Эндопротезирование крупных суставов в анамнезе",
+      ],
+      5
+    ),
   ]);
 
-  const [table5] = useState({ label: "Special Value", value: 50 });
+  const [table5, setTable5] = useState([
+    { label: "Special Wells 1", value: 0, checked: false },
+    { label: "Special Wells 2", value: 0, checked: false },
+    { label: "Special Wells 3", value: 0, checked: false },
+  ]);
 
-  const toggleCheck = (ti: number, ei: number) => {
+  const toggleCheck = (tableIndex: number, entryIndex: number) => {
     setTables((prev) => {
-      const copy = [...prev];
-      copy[ti][ei].checked = !copy[ti][ei].checked;
+      const copy = prev.map((table, i) =>
+        i === tableIndex
+          ? table.map((entry, j) => (j === entryIndex ? { ...entry, checked: !entry.checked } : entry))
+          : table
+      );
       return copy;
     });
   };
 
-  const tableSum = (table: Entry[]) => table.reduce((sum, e) => (e.checked ? sum + e.value : sum), 0);
+  const toggleCheckTable5 = (entryIndex: number) => {
+    setTable5((prev) =>
+      prev.map((entry, i) => (i === entryIndex ? { ...entry, checked: !entry.checked } : entry))
+    );
+  };
 
-  const grandTotal = tables.reduce((sum, t) => sum + tableSum(t), 0) + table5.value;
+  const tableSum = (table: (typeof tables)[0]) =>
+    table.reduce((sum, entry) => (entry.checked ? sum + entry.value : sum), 0);
+
+  const capriniSum = tables.reduce((acc, table) => acc + tableSum(table), 0);
+  const wellsSum = tableSum(table5);
 
   return (
     <div style={{ padding: "20px", fontFamily: "sans-serif" }}>
@@ -37,53 +109,92 @@ export default function App() {
 
       {tables.map((table, ti) => (
         <div key={ti} style={{ marginBottom: "20px" }}>
-          <h2>Table {ti + 1}</h2>
-          <table border={1} cellPadding={5}>
-            <thead>
-              <tr>
-                <th>Check</th>
-                <th>Label</th>
-                <th>Value</th>
-              </tr>
-            </thead>
+          <table border={1} cellPadding={5} style={{ width: "100%" }}>
             <tbody>
+              {/* Title row */}
+              <tr>
+                <td
+                  colSpan={1}
+                  style={{
+                    fontWeight: "bold",
+                    backgroundColor: "#eee",
+                    padding: "8px",
+                  }}>
+                  {tableTitles[ti]}
+                </td>
+              </tr>
+
+              {/* Entries */}
               {table.map((entry, ei) => (
                 <tr key={ei}>
                   <td>
-                    <input type="checkbox" checked={entry.checked} onChange={() => toggleCheck(ti, ei)} />
+                    <label style={{ cursor: "pointer", userSelect: "none" }}>
+                      <input
+                        type="checkbox"
+                        checked={entry.checked}
+                        onChange={() => toggleCheck(ti, ei)}
+                        style={{ marginRight: "8px" }}
+                      />
+                      {entry.label}
+                    </label>
                   </td>
-                  <td>{entry.label}</td>
-                  <td>{entry.value}</td>
                 </tr>
               ))}
-            </tbody>
-            <tfoot>
+
+              {/* Sum row */}
               <tr>
-                <td colSpan={2}>
-                  <strong>Sum</strong>
-                </td>
-                <td>
-                  <strong>{tableSum(table)}</strong>
-                </td>
+                <td style={{ fontWeight: "bold", padding: "8px" }}>Sum: {tableSum(table)}</td>
               </tr>
-            </tfoot>
+            </tbody>
           </table>
         </div>
       ))}
 
+      {/* Table 5 */}
       <div style={{ marginBottom: "20px" }}>
-        <h2>Table 5 (Separate)</h2>
-        <table border={1} cellPadding={5}>
+        <table border={1} cellPadding={5} style={{ width: "100%" }}>
           <tbody>
+            {/* Title row */}
             <tr>
-              <td>{table5.label}</td>
-              <td>{table5.value}</td>
+              <td
+                colSpan={1}
+                style={{
+                  fontWeight: "bold",
+                  backgroundColor: "#eee",
+                  padding: "8px",
+                }}>
+                Table 5 (Wells)
+              </td>
+            </tr>
+
+            {/* Entries */}
+            {table5.map((entry, ei) => (
+              <tr key={ei}>
+                <td>
+                  <label style={{ cursor: "pointer", userSelect: "none" }}>
+                    <input
+                      type="checkbox"
+                      checked={entry.checked}
+                      onChange={() => toggleCheckTable5(ei)}
+                      style={{ marginRight: "8px" }}
+                    />
+                    {entry.label}
+                  </label>
+                </td>
+              </tr>
+            ))}
+
+            {/* Sum row */}
+            <tr>
+              <td style={{ fontWeight: "bold", padding: "8px" }}>Sum: {wellsSum}</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <h2>Grand Total: {grandTotal}</h2>
+      {/* Grand totals */}
+      <h2>Сумма баллов по Caprini: {capriniSum}</h2>
+      <h2>Сумма баллов по Wells: {wellsSum}</h2>
 
       <button onClick={() => window.print()}>Print</button>
     </div>
