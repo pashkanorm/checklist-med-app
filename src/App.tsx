@@ -169,7 +169,7 @@ export default function App() {
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
-          margin-bottom: 2px;
+          margin-bottom: 6px; /* increased from 2px */
           font-size: 0.75rem;
         }
         .main-title {
@@ -181,7 +181,7 @@ export default function App() {
         }
         .patient-info {
           font-size: 0.65rem;
-          margin-bottom: 6px;
+          margin-bottom: 12px; /* increased from 6px */
           user-select: text;
         }
         .tables-wrapper {
@@ -273,9 +273,9 @@ export default function App() {
           display: flex;
           flex-direction: column;
           gap: 2px;
-          font-weight: 700;
+          font-weight: normal;
           font-size: 0.75rem;
-          margin-top: 4px;
+          margin-top: 20px;
           user-select: none;
         }
         .non-functional-table {
@@ -335,7 +335,7 @@ export default function App() {
           </div>
 
           <div className="patient-info">
-            Ф.И.О. пациента ___________________________________________ Возраст ___ Пол ____
+            Ф.И.О. пациента ____________________________________________________ Возраст ___ Пол ____
           </div>
         </div>
 
