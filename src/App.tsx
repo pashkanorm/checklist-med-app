@@ -169,7 +169,7 @@ export default function App() {
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
-          margin-bottom: 6px; /* increased from 2px */
+          margin-bottom: 6px;
           font-size: 0.75rem;
         }
         .main-title {
@@ -181,7 +181,7 @@ export default function App() {
         }
         .patient-info {
           font-size: 0.65rem;
-          margin-bottom: 12px; /* increased from 6px */
+          margin-bottom: 12px;
           user-select: text;
         }
         .tables-wrapper {
@@ -199,7 +199,6 @@ export default function App() {
           flex-direction: column;
           gap: 3px;
         }
-        /* Add margin-bottom to first table in each column for extra spacing */
         .left-column table:first-child {
           margin-bottom: 6px;
         }
@@ -230,9 +229,8 @@ export default function App() {
           padding: 3px 4px;
           font-size: 0.6rem;
           user-select: none;
-          border-bottom: 1.5px solid #444; /* keep bottom border under title */
+          border-bottom: 1.5px solid #444;
         }
-        /* Remove horizontal lines between tbody rows for tables 1-4 */
         .compact-table tbody tr:not(.table-title-row) td {
           border-top: none;
           border-bottom: none;
@@ -244,20 +242,46 @@ export default function App() {
           align-items: center;
         }
 
-        /* Checkbox styles for white background and normal black checkmark */
+        /* Custom checkbox styles */
         input[type="checkbox"] {
-          width: 13px;
-          height: 13px;
-          margin-right: 4px;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          appearance: none;
+
+          width: 12px;
+          height: 12px;
+          border: 1.5px solid #444;
+          border-radius: 1px;
+          background-color: white;
           cursor: pointer;
-          background-color: white !important;
-          border: 1.5px solid #444 !important;
-          -webkit-appearance: checkbox;
-          appearance: checkbox;
+          position: relative;
           vertical-align: middle;
+          margin-right: 4px;
         }
         input[type="checkbox"]:checked {
-          background-color: white !important;
+          background-color: white;
+          border-color: #444;
+        }
+        input[type="checkbox"]:checked::after {
+          content: "";
+          position: absolute;
+          left: 2.8px;
+          top: 0px;
+          width: 2.5px;
+          height: 7px;
+          border: solid black;
+          border-width: 0 2px 2px 0;
+          transform: rotate(45deg);
+        }
+        
+        @media (prefers-color-scheme: dark) {
+          input[type="checkbox"] {
+            background-color: white;
+            border-color: #ccc;
+          }
+          input[type="checkbox"]:checked::after {
+            border-color: black;
+          }
         }
 
         .sum-text {
@@ -319,7 +343,6 @@ export default function App() {
             max-width: 100%;
           }
           input[type="checkbox"] {
-            /* Show checkboxes in print */
             transform: scale(1) !important;
           }
         }
