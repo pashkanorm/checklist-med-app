@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 type Entry = { label: string; value: number; checked: boolean };
 
@@ -17,6 +17,21 @@ const tableTitles = [
 ];
 
 export default function App() {
+  // Patient info values
+  const [patientName, setPatientName] = useState("");
+  const [patientAge, setPatientAge] = useState<number | "">("");
+  const [patientSex, setPatientSex] = useState("");
+
+  // Track which input is in editing mode individually
+  const [editingName, setEditingName] = useState(true);
+  const [editingAge, setEditingAge] = useState(true);
+  const [editingSex, setEditingSex] = useState(true);
+
+  // Refs for autofocus
+  const nameRef = useRef<HTMLInputElement>(null);
+  const ageRef = useRef<HTMLInputElement>(null);
+  const sexRef = useRef<HTMLSelectElement>(null);
+
   const [tables, setTables] = useState([
     makeTable(
       [
@@ -77,23 +92,18 @@ export default function App() {
   const [table5, setTable5] = useState<Entry[]>([
     { label: "Активный рак (химиотерапия в ближайшие 6 мес. или паллиативное лечение)", value: 1, checked: false },
     { label: "Паралич, парез или иммобилизация нижней конечности", value: 1, checked: false },
-
     { label: "Постельный режим более 3 дней ", value: 1, checked: false },
     { label: "Оперативное вмешательство в анамнезе, в течение последних 4 нед.", value: 1, checked: false },
-
     { label: "Локальная болезненность по ходу глубоких вен", value: 1, checked: false },
-
     { label: "Увеличение объема нижней конечности", value: 1, checked: false },
-
     {
       label: "Односторонний увеличение голени более чем на 3 см (ниже большеберцового бугра)",
       value: 1,
       checked: false,
     },
     { label: "Односторонний отёк и изъязвление нижней конечности", value: 1, checked: false },
-
     { label: "Коллатерали поверхностных вен", value: 1, checked: false },
-    { label: "Альтернативный диагноз столь же вероятен или более вероятен, чем ТГВ", value: -1, checked: false },
+    { label: "Альтернативный диагноз столь же вероятен или более вероятен, чем ТГВ", value: 1, checked: false },
   ]);
 
   const toggleCheck = (tableIndex: number, entryIndex: number) => {
@@ -118,7 +128,6 @@ export default function App() {
   const capriniSum = tables.reduce((acc, table) => acc + tableSum(table), 0);
   const wellsSum = tableSum(table5);
 
-  // Static non-functional table data (4 columns, 4 rows)
   const nonFunctionalTableHeaders = [
     "Сумма баллов факторов риска",
     "Частота ТГВ",
@@ -135,217 +144,35 @@ export default function App() {
   return (
     <>
       <style>{`
-        * {
-          box-sizing: border-box;
-        }
-        body {
-          margin: 0;
-          padding: 0;
-          font-family: sans-serif;
-          font-size: 7.5px;
-          line-height: 1.0;
-          user-select: none;
-          background: white;
-          color: black;
-        }
-        .app-container {
-          padding: 3px 5px;
-          max-width: 980px;
-          margin: auto;
-        }
-        .faint-text {
-          color: #666;
-          opacity: 0.3;
-          font-size: 0.55rem;
-          margin-bottom: 2px;
-          user-select: none;
-        }
-        .centered-block {
-          max-width: 700px;
-          margin: 0 auto 6px auto;
-          user-select: text;
-        }
-        .header-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
-          margin-bottom: 6px;
-          font-size: 0.75rem;
-        }
-        .main-title {
-          font-weight: 700;
-          font-size: 0.85rem;
-          line-height: 1.0;
-          margin: 0;
-          user-select: text;
-        }
-        .patient-info {
-          font-size: 0.65rem;
-          margin-bottom: 12px;
-          user-select: text;
-        }
-        .tables-wrapper {
-          display: flex;
-          justify-content: space-between;
-          gap: 6px;
-          margin-bottom: 6px;
-          flex-wrap: wrap;
-        }
-        .left-column,
-        .right-column {
-          flex-basis: 48%;
-          min-width: 260px;
-          display: flex;
-          flex-direction: column;
-          gap: 3px;
-        }
-        .left-column table:first-child {
-          margin-bottom: 6px;
-        }
-        .right-column table:first-child {
-          margin-bottom: 6px;
-        }
-        table {
-          border-collapse: collapse;
-          width: 100%;
-          font-size: 0.6rem;
-          line-height: 1.1;
-        }
-        th,
-        td {
-          border: 1px solid #444;
-          padding: 1.5px 3px;
-        }
-        thead tr {
-          background-color: #eee;
-          font-weight: 600;
-        }
-        tbody tr:hover {
-          background-color: #f5f5f5;
-        }
-        .table-title-row td {
-          background-color: #eee;
-          font-weight: 600;
-          padding: 3px 4px;
-          font-size: 0.6rem;
-          user-select: none;
-          border-bottom: 1.5px solid #444;
-        }
-        .compact-table tbody tr:not(.table-title-row) td {
-          border-top: none;
-          border-bottom: none;
-        }
-        label {
-          cursor: pointer;
-          user-select: none;
-          display: flex;
-          align-items: center;
-        }
-
-        /* Custom checkbox styles */
-        input[type="checkbox"] {
-          -webkit-appearance: none;
-          -moz-appearance: none;
-          appearance: none;
-
-          width: 12px;
-          height: 12px;
-          border: 1.5px solid #444;
-          border-radius: 1px;
-          background-color: white;
-          cursor: pointer;
-          position: relative;
-          vertical-align: middle;
-          margin-right: 4px;
-        }
-        input[type="checkbox"]:checked {
-          background-color: white;
-          border-color: #444;
-        }
-        input[type="checkbox"]:checked::after {
-          content: "";
-          position: absolute;
-          left: 2.8px;
-          top: 0px;
-          width: 2.5px;
-          height: 7px;
-          border: solid black;
-          border-width: 0 2px 2px 0;
-          transform: rotate(45deg);
-        }
-        
-        @media (prefers-color-scheme: dark) {
-          input[type="checkbox"] {
-            background-color: white;
-            border-color: #ccc;
-          }
-          input[type="checkbox"]:checked::after {
-            border-color: black;
-          }
-        }
-
-        .sum-text {
-          font-weight: 700;
-          padding: 3px 4px;
-          text-align: right;
-          user-select: none;
-          font-size: 0.65rem;
-        }
-        .totals-wrapper {
-          flex-basis: 48%;
-          min-width: 260px;
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          font-weight: normal;
-          font-size: 0.75rem;
-          margin-top: 20px;
-          user-select: none;
-        }
-        .non-functional-table {
-          margin: 6px auto 4px auto;
-          width: 90%;
-          font-size: 0.55rem;
-          table-layout: fixed;
-          word-wrap: break-word;
-        }
-        .non-functional-table th,
-        .non-functional-table td {
-          padding: 2px 3px;
-        }
-        .app-footer-text {
-          font-size: 0.45rem;
-          margin-top: 0;
-          margin-bottom: 3px;
-          user-select: none;
-          text-align: left;
-          color: #666;
-          opacity: 0.3;
-          font-weight: 400;
-        }
-        .app-footer-text-bold {
-          font-weight: 700;
-          font-size: 0.6rem;
-          text-align: center;
-          margin: 1px 0 5px 0;
-          user-select: none;
-        }
-        @media print {
-          body {
-            margin: 0;
-            font-size: 10pt;
-            line-height: 1.1;
-            background: white !important;
-            color: black !important;
-          }
-          .app-container {
-            padding: 0;
-            max-width: 100%;
-          }
-          input[type="checkbox"] {
-            transform: scale(1) !important;
-          }
-        }
+        * { box-sizing: border-box; }
+        body { margin:0; padding:0; font-family:sans-serif; font-size:7.5px; line-height:1; background:white; color:black; user-select:none; }
+        .app-container { padding:3px 5px; max-width:980px; margin:auto; }
+        .faint-text { color:#666; opacity:0.3; font-size:0.55rem; margin-bottom:2px; user-select:none; }
+        .centered-block { max-width:700px; margin:0 auto 6px auto; user-select:text; }
+        .header-row { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:6px; font-size:0.75rem; }
+        .main-title { font-weight:700; font-size:0.85rem; line-height:1; margin:0; user-select:text; }
+        .patient-info { font-size:0.65rem; margin-bottom:12px; user-select:text; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+        .patient-info input, .patient-info select { font-size:0.65rem; padding:1px 2px; margin-right:12px; }
+        .patient-text { font-weight:600; margin-right:25px; }
+        .tables-wrapper { display:flex; justify-content:space-between; gap:6px; margin-bottom:6px; flex-wrap:wrap; }
+        .left-column, .right-column { flex-basis:48%; min-width:260px; display:flex; flex-direction:column; gap:3px; }
+        .left-column table:first-child, .right-column table:first-child { margin-bottom:6px; }
+        table { border-collapse:collapse; width:100%; font-size:0.6rem; line-height:1.1; }
+        th, td { border:1px solid #444; padding:1.5px 3px; }
+        thead tr { background-color:#eee; font-weight:600; }
+        tbody tr:hover { background-color:#f5f5f5; }
+        .table-title-row td { background-color:#eee; font-weight:600; padding:3px 4px; font-size:0.6rem; user-select:none; border-bottom:1.5px solid #444; }
+        .compact-table tbody tr:not(.table-title-row) td { border-top:none; border-bottom:none; }
+        label { cursor:pointer; user-select:none; display:flex; align-items:center; }
+        input[type="checkbox"] { -webkit-appearance:none; -moz-appearance:none; appearance:none; width:12px; height:12px; border:1.5px solid #444; border-radius:1px; background:white; cursor:pointer; position:relative; vertical-align:middle; margin-right:4px; }
+        input[type="checkbox"]:checked::after { content:""; position:absolute; left:2.8px; top:0px; width:2.5px; height:7px; border:solid black; border-width:0 2px 2px 0; transform:rotate(45deg); }
+        .sum-text { font-weight:700; padding:3px 4px; text-align:right; user-select:none; font-size:0.65rem; }
+        .totals-wrapper { flex-basis:48%; min-width:260px; display:flex; flex-direction:column; gap:2px; font-weight:normal; font-size:0.75rem; margin-top:20px; user-select:none; }
+        .non-functional-table { margin:6px auto 4px auto; width:90%; font-size:0.55rem; table-layout:fixed; word-wrap:break-word; }
+        .non-functional-table th, .non-functional-table td { padding:2px 3px; }
+        .app-footer-text { font-size:0.45rem; margin-top:0; margin-bottom:3px; user-select:none; text-align:left; color:#666; opacity:0.3; font-weight:400; }
+        .app-footer-text-bold { font-weight:700; font-size:0.6rem; text-align:center; margin:1px 0 5px 0; user-select:none; }
+        @media print { body { font-size:10pt !important; background:white !important; color:black !important; } input[type="checkbox"], input[type="text"], select { font-size:10pt !important; } }
       `}</style>
 
       <div className="app-container">
@@ -358,22 +185,83 @@ export default function App() {
           </div>
 
           <div className="patient-info">
-            Ф.И.О. пациента ____________________________________________________ Возраст ___ Пол ____
+            <span>Ф.И.О. пациента</span>
+            {editingName ? (
+              <input
+                ref={nameRef}
+                type="text"
+                value={patientName}
+                onChange={(e) => setPatientName(e.target.value)}
+                onBlur={() => setEditingName(false)}
+                style={{ width: "240px" }}
+              />
+            ) : (
+              <span
+                className="patient-text"
+                onDoubleClick={() => {
+                  setEditingName(true);
+                  setTimeout(() => nameRef.current?.focus(), 0);
+                }}>
+                {patientName || "__________________________"}
+              </span>
+            )}
+
+            <span>Возраст</span>
+            {editingAge ? (
+              <input
+                ref={ageRef}
+                type="number"
+                value={patientAge}
+                onChange={(e) => setPatientAge(Number(e.target.value))}
+                onBlur={() => setEditingAge(false)}
+                style={{ width: "50px" }}
+              />
+            ) : (
+              <span
+                className="patient-text"
+                onDoubleClick={() => {
+                  setEditingAge(true);
+                  setTimeout(() => ageRef.current?.focus(), 0);
+                }}>
+                {patientAge || "__"}
+              </span>
+            )}
+
+            <span>Пол</span>
+            {editingSex ? (
+              <select
+                ref={sexRef}
+                value={patientSex}
+                onChange={(e) => setPatientSex(e.target.value)}
+                onBlur={() => setEditingSex(false)}
+                style={{ width: "70px" }}>
+                <option value="" disabled hidden>
+                  ---------
+                </option>
+                <option value="мужской">мужской</option>
+                <option value="женский">женский</option>
+              </select>
+            ) : (
+              <span
+                className="patient-text"
+                onDoubleClick={() => {
+                  setEditingSex(true);
+                  setTimeout(() => sexRef.current?.focus(), 0);
+                }}>
+                {patientSex || "________"}
+              </span>
+            )}
           </div>
         </div>
 
         <div className="tables-wrapper">
-          {/* Left column: Table 1 and Table 2 */}
           <div className="left-column">
             {[0, 1].map((idx) => (
               <table key={idx} cellPadding={4} border={1} className="compact-table">
                 <tbody>
-                  {/* Title row */}
                   <tr className="table-title-row">
                     <td colSpan={1}>{tableTitles[idx]}</td>
                   </tr>
-
-                  {/* Entries */}
                   {tables[idx].map((entry, ei) => (
                     <tr key={ei}>
                       <td>
@@ -389,17 +277,13 @@ export default function App() {
             ))}
           </div>
 
-          {/* Right column: Table 3 and Table 4 */}
           <div className="right-column">
             {[2, 3].map((idx) => (
               <table key={idx} cellPadding={4} border={1} className="compact-table">
                 <tbody>
-                  {/* Title row */}
                   <tr className="table-title-row">
                     <td colSpan={1}>{tableTitles[idx]}</td>
                   </tr>
-
-                  {/* Entries */}
                   {tables[idx].map((entry, ei) => (
                     <tr key={ei}>
                       <td>
@@ -413,8 +297,6 @@ export default function App() {
                 </tbody>
               </table>
             ))}
-
-            {/* Totals below tables 3 and 4 */}
             <div className="totals-wrapper">
               <div>Сумма баллов по Caprini: {capriniSum}</div>
               <div>Сумма баллов по Wells: {wellsSum}</div>
@@ -422,7 +304,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* Below left column (below table 2) the non-functional 4-column 4-row table */}
         <table
           className="non-functional-table"
           cellPadding={2}
@@ -430,10 +311,9 @@ export default function App() {
           style={{ marginTop: 5, marginBottom: 3, tableLayout: "fixed" }}>
           <thead>
             <tr>
-              <th>{nonFunctionalTableHeaders[0]}</th>
-              <th>{nonFunctionalTableHeaders[1]}</th>
-              <th>{nonFunctionalTableHeaders[2]}</th>
-              <th>{nonFunctionalTableHeaders[3]}</th>
+              {nonFunctionalTableHeaders.map((h, i) => (
+                <th key={i}>{h}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -452,7 +332,6 @@ export default function App() {
         <p className="app-footer-text">Приложение 4</p>
         <p className="app-footer-text-bold">Шкала оценки вероятности тромбоза глубоких вен Wells P.S.</p>
 
-        {/* Table 5 */}
         <table cellPadding={3} border={1} style={{ marginBottom: 7, fontSize: "0.6rem" }}>
           <thead>
             <tr style={{ backgroundColor: "#eee", fontWeight: "bold" }}>
